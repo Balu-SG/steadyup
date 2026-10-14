@@ -1,7 +1,11 @@
 # Live demo checklist
 
-The live demo depends on a chain of devices: TV app → tunnel URL → server on the
-laptop → phone. Check each link before you present.
+The live demo depends on a chain: TV app → server at
+**https://steadyup.onrender.com** → phone. Check each link before you present.
+
+The server runs on Render's free tier, which **sleeps after about 15 minutes
+without traffic** and takes about a minute to wake up. Always wake it before you
+go on (step 2 below).
 
 ## The night before
 
@@ -16,19 +20,15 @@ laptop → phone. Check each link before you present.
 1. **Join the venue Wi-Fi** with the laptop, the phone and (if used) the Fire TV.
    Some venue networks block device-to-device traffic. The demo only needs
    internet access, not a local network, because everything goes through the tunnel.
-2. **Start the server and tunnel:**
-   ```bash
-   scripts/dev-tunnel.sh
-   ```
-   Note the `https://….trycloudflare.com` URL it prints.
-3. **The URL has probably changed since the last build.** Rebuild the TV app so
-   it points at the new URL:
+2. **Wake the server:** open **https://steadyup.onrender.com/health** on the
+   phone. Wait until it shows `{"ok":true,...}` (up to a minute if it was asleep).
+3. **Check the TV app points at Render:** `tv/packages/shared-ui/src/steadyup/config.ts`
+   must say `https://steadyup.onrender.com`. Running `scripts/dev-tunnel.sh`
+   changes it to a temporary tunnel; if that happened, set it back and rebuild:
    - Browser demo: `cd tv/apps/expo-multi-tv && npx expo export -p web --output-dir ../../../out/tv-web`,
      then serve it: `cd out/tv-web && python3 -m http.server 8090`
    - Fire TV (Vega OS): `cd tv && yarn build:vega`, then reinstall the `.vpkg`
-4. **Check the server through the tunnel:** open `<tunnel-url>/health` on the
-   phone. It should show `{"ok":true,...}`.
-5. **Do one full practice run:** pair, 2–3 sit-to-stands, one balance hold.
+4. **Do one full practice run:** pair, 2–3 sit-to-stands, one balance hold.
 
 ## Right before you go on
 
@@ -38,6 +38,7 @@ laptop → phone. Check each link before you present.
       (iPhone asks for motion permission; tap **Allow**).
 - [ ] TV / laptop: on the SteadyUp home screen, phone pill shows
       **Phone connected** (green).
+- [ ] Server awake: `/health` opened within the last 10 minutes.
 - [ ] Laptop: sleep turned off (`caffeinate -d` in a terminal keeps a Mac awake).
 - [ ] Backup video open in a player, paused on the first frame.
 
@@ -60,5 +61,5 @@ To save time, skip the 30-second warm-up with **Skip**, and press **Done** on he
 |---|---|
 | TV says "Phone not connected" | On the phone, reload the page and tap Start again. Pairing codes stay valid for 3 hours. |
 | Reps don't count | Re-seat the phone in the pocket and sit down before pressing OK: the app calibrates "seated" at the start. |
-| Nothing works after the tunnel restarted | The URL changed. Rebuild the TV app (step 3 above) or switch to the backup video. |
+| TV says "Cannot reach the SteadyUp server" | The server is asleep or down. Open `/health` (step 2) and wait a minute; check the service on dashboard.render.com. Otherwise use the backup video. |
 | Venue Wi-Fi is down | Use a phone hotspot for the laptop and phone, or play the backup video. |

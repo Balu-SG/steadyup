@@ -92,20 +92,27 @@ were written for this project.
 
 ## Running it
 
-Requirements: Node 20+, Yarn (for `tv/`), and
-[cloudflared](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/)
-for the HTTPS tunnel. Phones only allow motion sensors on HTTPS pages.
+Requirements: Node 20+ and Yarn (for `tv/`). Phones only allow motion sensors
+on HTTPS pages, so the server must be reachable over HTTPS.
 
-**1. Server and tunnel**
+**1. Server**
+
+The server is deployed on Render at **https://steadyup.onrender.com** from
+[`render.yaml`](render.yaml), and the TV app points there
+(`tv/packages/shared-ui/src/steadyup/config.ts`). On the free tier it sleeps
+when idle; the first request wakes it in about a minute.
+
+To work on the server locally, use a temporary HTTPS tunnel
+([cloudflared](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/)):
 
 ```bash
 cd server && npm install && cd ..
 scripts/dev-tunnel.sh
 ```
 
-This prints a public `https://….trycloudflare.com` URL and writes it into
-`tv/packages/shared-ui/src/steadyup/config.ts`. Rebuild the TV app whenever the
-URL changes.
+This prints a `https://….trycloudflare.com` URL and writes it into `config.ts`.
+Rebuild the TV app after it changes, and set it back to the Render URL before
+building for a demo.
 
 **2. TV app**
 
@@ -131,10 +138,10 @@ trouser pocket, screen facing your leg.
 cd server && npm test              # 15 tests: pairing, relay, rep counting, steadiness, fall detection
 ```
 
-End-to-end, with the TV web build served on port 8090 and the server on 8787:
+End-to-end, with the TV web build served on port 8090, against the live server:
 
 ```bash
-node scripts/e2e-tv.mjs http://localhost:8090 http://localhost:8787 out/e2e /tmp/chrome-profile
+node scripts/e2e-tv.mjs http://localhost:8090 https://steadyup.onrender.com out/e2e /tmp/chrome-profile
 ```
 
 The test pairs a simulated phone, runs the whole session, saves a screenshot of
