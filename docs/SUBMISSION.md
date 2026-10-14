@@ -5,6 +5,12 @@
 Strength and balance exercises on your TV, where the phone in your pocket does
 the counting.
 
+## Links
+
+- **Try it in your browser:** https://steadyup.onrender.com/play (arrow keys + Enter = TV remote; scan the QR code with a phone). The first visit can take about a minute while the free server wakes up.
+- **Demo video:** `docs/steadyup-demo.mp4` in the repo
+- **Code:** https://github.com/Balu-SG/steadyup (private: ask us for access)
+
 ## Short description (≈50 words)
 
 SteadyUp is a guided 5-minute strength and balance session for older adults,

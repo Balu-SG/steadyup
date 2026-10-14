@@ -18,6 +18,12 @@ trouser pocket. From then on:
 There's no app to install on the phone and nothing to wear. It runs in the
 phone's browser.
 
+**Try it in your browser:** <https://steadyup.onrender.com/play>. The arrow keys
+and Enter act as the TV remote; scan the QR code with your phone to pair. The
+server is on a free plan, so the first visit can take about a minute to wake it.
+
+**Demo video (1:45):** [docs/steadyup-demo.mp4](docs/steadyup-demo.mp4)
+
 ![Home screen](docs/images/home.png)
 
 | Pair with a QR code | Reps counted from the pocket |
@@ -83,6 +89,7 @@ and runs in the phone's browser:
 | `scripts/dev-tunnel.sh` | Starts the server behind a public HTTPS tunnel and points the TV app at it |
 | `scripts/e2e-tv.mjs` | End-to-end test: drives the TV app in headless Chrome with a simulated phone |
 | `scripts/make-video.mjs` | Builds the demo video from a recorded test run |
+| `scripts/build-web-app.sh` | Builds the TV app for the browser into `server/public/app/`, served at `/app/` and `/play` |
 
 The TV app is built on Amazon's
 [react-native-multi-tv-app-sample](https://github.com/AmazonAppDev/react-native-multi-tv-app-sample)

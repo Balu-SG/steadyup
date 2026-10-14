@@ -80,6 +80,23 @@ test('serves the phone page for /p/<code>', async () => {
   server.close();
 });
 
+test('serves the browser TV app at /app/ and its scaled frame at /play', async () => {
+  const { server, base } = await start();
+  const app = await fetch(`${base}/app/`);
+  assert.equal(app.status, 200);
+  const html = await app.text();
+  assert.match(html, /<title>SteadyUp<\/title>/);
+  const bundle = html.match(/src="(\/app\/_expo\/[^"]+\.js)"/)?.[1];
+  assert.ok(bundle, 'app page references its JS bundle under /app/');
+  const js = await fetch(`${base}${bundle}`);
+  assert.equal(js.status, 200);
+  assert.match(js.headers.get('content-type'), /javascript/);
+  const play = await fetch(`${base}/play`);
+  assert.equal(play.status, 200);
+  assert.match(await play.text(), /src="\/app\/"/);
+  server.close();
+});
+
 test('sweep removes idle empty sessions only', () => {
   let t = 0;
   const store = createSessionStore({ now: () => t });

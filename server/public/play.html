@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SteadyUp on your TV</title>
+  <style>
+    html, body { margin: 0; height: 100%; background: #000; overflow: hidden; }
+    /* The TV app is designed for 1920x1080; render it at exactly that size and
+       scale the whole frame to fit the window. */
+    #tv { position: absolute; left: 50%; top: 50%; width: 1920px; height: 1080px; border: 0;
+          transform-origin: 0 0; background: #0B2A2B; }
+    #help { position: fixed; left: 0; right: 0; bottom: 6px; text-align: center; color: #A9C4C1;
+            font: 14px/1.4 system-ui, -apple-system, sans-serif; pointer-events: none; }
+    kbd { border: 1px solid #6F8F8C; border-radius: 4px; padding: 0 5px; }
+  </style>
+</head>
+<body>
+  <iframe id="tv" src="/app/" title="SteadyUp TV app"></iframe>
+  <div id="help">Remote: <kbd>←</kbd> <kbd>→</kbd> <kbd>↑</kbd> <kbd>↓</kbd> to move, <kbd>Enter</kbd> to select. Scan the QR code with your phone to pair.</div>
+  <script>
+    const tv = document.getElementById('tv');
+    function fit() {
+      const s = Math.min(innerWidth / 1920, (innerHeight - 28) / 1080);
+      tv.style.transform = `translate(${-960 * s}px, ${-540 * s - 14}px) scale(${s})`;
+    }
+    fit();
+    addEventListener('resize', fit);
+    // Keys go to the TV app: keep focus in the frame.
+    tv.addEventListener('load', () => tv.contentWindow.focus());
+    addEventListener('click', () => tv.contentWindow.focus());
+    addEventListener('keydown', () => tv.contentWindow.focus());
+  </script>
+</body>
+</html>

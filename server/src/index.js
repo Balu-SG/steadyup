@@ -16,6 +16,10 @@ const MIME = {
   '.svg': 'image/svg+xml',
   '.png': 'image/png',
   '.json': 'application/json',
+  '.ttf': 'font/ttf',
+  '.woff': 'font/woff',
+  '.woff2': 'font/woff2',
+  '.ico': 'image/x-icon',
 };
 
 function baseUrl(req) {
@@ -79,6 +83,10 @@ export function createServer({ store = createSessionStore() } = {}) {
 
     if (req.method !== 'GET') return sendJson(res, 405, { error: 'method_not_allowed' });
     if (path === '/' ) return sendFile(res, 'tv.html');
+    // The TV app built for the browser (scripts/build-web-app.sh), and a page that
+    // shows it in a scaled 1920x1080 frame so it fits any window.
+    if (path === '/app' || path === '/app/') return sendFile(res, 'app/index.html');
+    if (path === '/play') return sendFile(res, 'play.html');
     if (/^\/p\/\d{4}$/.test(path)) return sendFile(res, 'phone.html');
     return sendFile(res, path.slice(1));
   });
