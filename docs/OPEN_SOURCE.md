@@ -12,8 +12,8 @@ contributed back as a pull request.
 `react-native-pixel-perfect`, which uses the ratio of **screen diagonals**. On a
 16:9 screen that equals the width ratio, so TVs look right. On anything wider or
 taller than 16:9, such as the web build in a browser window or an emulator,
-the layout no longer fits. At 1920×993, content ran up to 66px past the bottom
-of the screen, covering the footer and hiding buttons.
+the layout no longer fits. At 1920×993, content ran up to 46px into the footer
+on three of SteadyUp's screens, covering hints and pushing text off the screen.
 
 ## The fix
 
@@ -52,8 +52,8 @@ the template. To open the PR:
 `scaledPixels` uses `react-native-pixel-perfect`, which scales by the ratio of
 screen diagonals. On 16:9 screens this equals the width ratio, but on windows
 that are wider or taller than 16:9 (the web build in a browser, emulators), the
-layout overflows: at 1920×993 content runs up to 66px past the bottom of the
-screen and hides buttons.
+layout overflows: at 1920×993, content in our app ran up to 46px into the
+footer on three screens and pushed text off the bottom.
 
 This change scales by the tighter of `width / 1920` and `height / 1080`, so the
 1920×1080 design always fits. 16:9 TVs are unchanged.
