@@ -6,9 +6,12 @@ import { fileURLToPath } from 'node:url';
 import { WebSocketServer } from 'ws';
 import QRCode from 'qrcode';
 import { createSessionStore } from './sessions.js';
+import { createCoach } from './coach.js';
 
 const PUBLIC_DIR = fileURLToPath(new URL('../public/', import.meta.url));
 const MAX_MESSAGE_BYTES = 4096;
+const COACH_LIMIT = 20; // AI coach requests per client per window (Bedrock costs money)
+const COACH_WINDOW_MS = 10 * 60 * 1000;
 const MIME = {
   '.html': 'text/html; charset=utf-8',
   '.js': 'text/javascript; charset=utf-8',
@@ -45,7 +48,17 @@ async function sendFile(res, relPath) {
   }
 }
 
-export function createServer({ store = createSessionStore() } = {}) {
+async function readJson(req, maxBytes = MAX_MESSAGE_BYTES) {
+  let body = '';
+  for await (const chunk of req) {
+    body += chunk;
+    if (body.length > maxBytes) throw new Error('too_large');
+  }
+  return JSON.parse(body || '{}');
+}
+
+export function createServer({ store = createSessionStore(), coach = createCoach() } = {}) {
+  const coachUse = new Map(); // client ip -> { since, count }
   const server = http.createServer(async (req, res) => {
     const url = new URL(req.url, 'http://localhost');
     const path = url.pathname;
@@ -65,6 +78,21 @@ export function createServer({ store = createSessionStore() } = {}) {
       const phoneUrl = `${baseUrl(req)}/p/${s.code}`;
       const qrSvg = await QRCode.toString(phoneUrl, { type: 'svg', margin: 1 });
       return sendJson(res, 201, { code: s.code, phoneUrl, qrSvg });
+    }
+    // Personal coaching message for the session summary (Amazon Bedrock, see coach.js).
+    if (req.method === 'POST' && path === '/api/coach') {
+      let body;
+      try {
+        body = await readJson(req);
+      } catch {
+        return sendJson(res, 400, { error: 'bad_request' });
+      }
+      const ip = String(req.headers['x-forwarded-for'] ?? req.socket.remoteAddress).split(',')[0].trim();
+      const now = Date.now();
+      const use = coachUse.get(ip);
+      if (!use || now - use.since > COACH_WINDOW_MS) coachUse.set(ip, { since: now, count: 1 });
+      else if (++use.count > COACH_LIMIT) return sendJson(res, 429, { error: 'too_many_requests' });
+      return sendJson(res, 200, await coach(body.results));
     }
     // PNG QR for TV apps that cannot render SVG.
     const qrMatch = path.match(/^\/api\/sessions\/(\d{4})\/qr\.png$/);
@@ -133,7 +161,10 @@ export function createServer({ store = createSessionStore() } = {}) {
     });
   });
 
-  const sweeper = setInterval(() => store.sweep(), 10 * 60 * 1000);
+  const sweeper = setInterval(() => {
+    store.sweep();
+    coachUse.clear(); // the coach rate-limit window is also 10 minutes
+  }, COACH_WINDOW_MS);
   sweeper.unref();
   server.on('close', () => {
     clearInterval(sweeper);

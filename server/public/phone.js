@@ -20,6 +20,15 @@ function send(msg) {
   if (ws?.readyState === WebSocket.OPEN) ws.send(JSON.stringify(msg));
 }
 
+// Spoken coaching sent by the TV ("Stand up", rep counts, ...).
+function speak(text) {
+  if (!('speechSynthesis' in window)) return;
+  speechSynthesis.cancel(); // never queue up stale cues
+  const u = new SpeechSynthesisUtterance(text);
+  u.rate = 0.95;
+  speechSynthesis.speak(u);
+}
+
 function connect() {
   const proto = location.protocol === 'https:' ? 'wss' : 'ws';
   ws = new WebSocket(`${proto}://${location.host}/ws?code=${code}&role=phone`);
@@ -33,6 +42,7 @@ function connect() {
     const msg = JSON.parse(e.data);
     if (msg.type === 'mode') tracker.setMode(msg.mode);
     if (msg.type === 'calibrate') tracker.calibrate();
+    if (msg.type === 'say' && started && typeof msg.text === 'string') speak(msg.text.slice(0, 300));
     if (msg.type === 'mode' || msg.type === 'calibrate') navigator.vibrate?.(60);
   };
 }
@@ -92,6 +102,7 @@ $('start').addEventListener('click', async () => {
     }
   }
   started = true;
+  speak('Ready. Put me in your pocket.'); // iOS only allows speech after a tap; this unlocks it
   window.addEventListener('devicemotion', onMotion);
   const awake = await keepAwake();
   $('start').disabled = true;

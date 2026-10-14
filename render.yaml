@@ -12,3 +12,13 @@ services:
     envVars:
       - key: NODE_VERSION
         value: "22"
+      # AI coach on Amazon Bedrock (server/src/coach.js). Without credentials the
+      # server uses rule-based coaching messages instead.
+      - key: AWS_REGION
+        value: us-east-1
+      - key: BEDROCK_MODEL_ID
+        value: us.amazon.nova-lite-v1:0
+      - key: AWS_ACCESS_KEY_ID
+        sync: false
+      - key: AWS_SECRET_ACCESS_KEY
+        sync: false

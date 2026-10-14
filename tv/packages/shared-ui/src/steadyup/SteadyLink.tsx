@@ -25,6 +25,8 @@ export type SteadyLink = {
   live: LiveState;
   setMode: (mode: LiveState['mode']) => void;
   calibrate: () => void;
+  // Spoken coaching: the phone speaks it; without a phone, the TV speaks it if it can.
+  say: (text: string) => void;
   onEvent: (listener: (ev: PhoneEvent) => void) => () => void;
   newSession: () => void;
 };
@@ -40,6 +42,8 @@ export function SteadyLinkProvider({ children }: { children: React.ReactNode }) 
   const [attempt, setAttempt] = useState(0);
   const wsRef = useRef<WebSocket | null>(null);
   const listeners = useRef(new Set<(ev: PhoneEvent) => void>());
+  const phoneRef = useRef(false);
+  phoneRef.current = phoneConnected;
 
   // Create a pairing session (again when asked, or when the server forgot ours).
   useEffect(() => {
@@ -102,6 +106,19 @@ export function SteadyLinkProvider({ children }: { children: React.ReactNode }) 
     if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(msg));
   }, []);
 
+  const say = useCallback(
+    (text: string) => {
+      if (phoneRef.current) return send({ type: 'say', text });
+      // Browser builds (the /play demo) can speak on the TV itself.
+      const synth = (globalThis as any).speechSynthesis;
+      const Utterance = (globalThis as any).SpeechSynthesisUtterance;
+      if (!synth || !Utterance) return;
+      synth.cancel();
+      synth.speak(new Utterance(text));
+    },
+    [send],
+  );
+
   const value = useMemo<SteadyLink>(
     () => ({
       status,
@@ -111,6 +128,7 @@ export function SteadyLinkProvider({ children }: { children: React.ReactNode }) 
       live,
       setMode: (mode) => send({ type: 'mode', mode }),
       calibrate: () => send({ type: 'calibrate' }),
+      say,
       onEvent: (listener) => {
         listeners.current.add(listener);
         return () => {
@@ -119,7 +137,7 @@ export function SteadyLinkProvider({ children }: { children: React.ReactNode }) 
       },
       newSession: () => setAttempt((a) => a + 1),
     }),
-    [status, code, phoneConnected, live, send],
+    [status, code, phoneConnected, live, send, say],
   );
 
   return <SteadyLinkContext.Provider value={value}>{children}</SteadyLinkContext.Provider>;

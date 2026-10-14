@@ -22,6 +22,23 @@ function resultText(step: Step, r: StepResult | undefined): string {
   return step.kind === 'selfPaced' ? 'Nice work ✓' : 'Done ✓';
 }
 
+function readyText(step: Step): string {
+  if (step.kind === 'reps') return 'Sit down on the chair, then press OK.';
+  if (step.kind === 'hold') return 'Stand up and get into position, then press OK.';
+  return 'Press OK when you are ready.';
+}
+
+// What the coach says when a step ends (empty for a skipped step).
+function resultSpeech(step: Step, r: StepResult | undefined, last: boolean): string {
+  if (!r) return '';
+  let said = '';
+  if (r.kind === 'reps') said = `${r.reps} sit-to-stands. ${r.reps >= r.target ? 'Great work.' : 'Good effort.'}`;
+  else if (r.kind === 'hold') said = r.steadiness >= 0 ? `Steadiness ${r.steadiness}. Well done.` : 'Well done.';
+  else if (r.done) said = 'Nice work.';
+  if (!said) return '';
+  return `${said} ${last ? 'Press OK to finish.' : 'Press OK for the next exercise.'}`;
+}
+
 export default function SessionScreen() {
   const isFocused = useIsFocused();
   const nav = useNavigation<any>();
@@ -43,6 +60,36 @@ export default function SessionScreen() {
   linkRef.current = link;
   const repsRef = useRef(0);
   repsRef.current = reps;
+
+  // Spoken coaching, so nobody has to read the screen mid-exercise.
+  const say = (text: string) => text && linkRef.current.say(text);
+  const warnedAt10 = useRef(false);
+  useEffect(() => {
+    if (phase === 'ready') say(`${step.title}. ${readyText(step)}`);
+    if (phase === 'active') {
+      warnedAt10.current = false;
+      if (step.kind === 'timed') say(`Go. ${step.seconds} seconds.`);
+      if (step.kind === 'reps') say('Go. Stand up tall, then sit down slowly.');
+      if (step.kind === 'hold') say('Hold steady.');
+      if (step.kind === 'selfPaced') say(`Do ${step.target}, at your own pace. Press Done when you finish.`);
+    }
+    if (phase === 'result') {
+      say(resultSpeech(step, results.current.find((r) => r.id === step.id), index + 1 >= TODAY.length));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase, index]);
+  useEffect(() => {
+    if (phase === 'countdown' && countdown > 0) say(String(countdown));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase, countdown]);
+  useEffect(() => {
+    if (phase === 'active' && step.kind === 'reps' && reps > 0 && reps < step.target) say(String(reps));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [reps]);
+  useEffect(() => {
+    if (fallPrompt) say('Are you OK? Press OK on the remote if you are fine.');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fallPrompt]);
 
   // Stop sensing when leaving the screen.
   useEffect(() => () => linkRef.current.setMode('idle'), []);
@@ -105,6 +152,10 @@ export default function SessionScreen() {
     const t = setInterval(() => {
       const secs = (Date.now() - startedAt.current) / 1000;
       setElapsed(secs);
+      if (step.kind === 'timed' && step.seconds - secs <= 10 && !warnedAt10.current) {
+        warnedAt10.current = true;
+        linkRef.current.say('Ten seconds left.');
+      }
       if (step.kind === 'timed' && secs >= step.seconds) finish({ id: step.id, kind: 'timed', done: true });
       if (step.kind === 'reps' && secs >= step.timeLimitS) {
         finish({ id: step.id, kind: 'reps', reps: repsRef.current, target: step.target, seconds: Math.round(secs) });
@@ -175,13 +226,7 @@ export default function SessionScreen() {
             <View style={{ marginTop: px(40), flex: 1 }}>
               {phase === 'ready' && (
                 <Card style={{ alignSelf: 'flex-start' }}>
-                  <Text style={type.h2}>
-                    {step.kind === 'reps'
-                      ? 'Sit down on the chair, then press OK.'
-                      : step.kind === 'hold'
-                        ? 'Stand up and get into position, then press OK.'
-                        : 'Press OK when you are ready.'}
-                  </Text>
+                  <Text style={type.h2}>{readyText(step)}</Text>
                 </Card>
               )}
               {phase === 'countdown' && <CountdownCircle value={countdown} label={step.kind === 'reps' ? 'Stay seated…' : 'Get into position…'} />}

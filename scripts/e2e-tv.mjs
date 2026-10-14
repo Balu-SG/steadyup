@@ -207,9 +207,11 @@ const phone = new WebSocket(`${serverUrl.replace(/^http/, 'ws')}/ws?code=${code}
 await new Promise((r) => phone.on('open', r));
 let mode = 'idle';
 const holdScores = [91, 84, 72];
+const spoken = []; // spoken coaching the TV asked the phone to say
 const send = (m) => phone.send(JSON.stringify(m));
 phone.on('message', (d) => {
   const m = JSON.parse(d);
+  if (m.type === 'say') spoken.push(m.text);
   if (m.type === 'mode') {
     if (mode === 'hold' && m.mode !== 'hold') {
       send({ type: 'event', event: { type: 'hold_end', steadiness: holdScores.shift() ?? 80, durationMs: 8500, meanRms: 0.07, perSecond: [] } });
@@ -308,6 +310,7 @@ await linger(4500);
 await titleCard('Fire TV · Vega OS · Android TV  +  any phone browser');
 stopRecording();
 console.log('--- summary text ---\n' + (await bodyText()));
+console.log(`--- ${spoken.length} spoken cues ---\n` + spoken.join('\n'));
 
 console.log(layoutProblems.length ? `--- ${layoutProblems.length} layout problem(s) ---\n${layoutProblems.join('\n')}` : '--- layout OK on every screen ---');
 if (layoutProblems.length) process.exitCode = 1;

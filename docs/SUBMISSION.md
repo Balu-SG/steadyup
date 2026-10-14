@@ -2,22 +2,22 @@
 
 ## One-liner
 
-Strength and balance exercises on your TV, where the phone in your pocket does
-the counting.
+The CDC's fall-prevention exercises as a 5-minute routine on your Fire TV, with
+the phone in your pocket counting reps and scoring balance.
 
 ## Links
 
 - **Try it in your browser:** https://steadyup.onrender.com/play (arrow keys + Enter = TV remote; scan the QR code with a phone). The first visit can take about a minute while the free server wakes up.
-- **Demo video:** `docs/steadyup-demo.mp4` in the repo
+- **Demo video:** [YOU: public YouTube link to the video recorded on the Fire TV or Vega simulator; the rules require the device, so don't use the browser recording]
 - **Code:** https://github.com/Balu-SG/steadyup (private: ask us for access)
 
 ## Short description (≈50 words)
 
-SteadyUp is a guided 5-minute strength and balance session for older adults,
-shown on the TV and controlled with the remote. A phone in the user's trouser
-pocket, running in the browser with no app to install, counts sit-to-stands,
-scores balance steadiness live, and asks "Are you OK?" after a sudden fall-like
-movement.
+SteadyUp is a guided 5-minute strength and balance routine for older adults on
+Fire TV, built on the moves in the CDC's STEADI fall-prevention tests. A phone in
+the user's pocket, with no app to install, counts sit-to-stands and scores
+balance live. A spoken coach guides every move, and an AI coach on Amazon
+Bedrock sums up each session.
 
 ## The problem
 
@@ -43,7 +43,22 @@ SteadyUp uses two devices most households already have:
     steadiness score
   - **an impact followed by stillness** brings up an "Are you OK?" prompt on the TV
 
-At the end, a summary shows reps done and the best steadiness score.
+- **A spoken coach** guides every move through the phone's speaker ("Stand up
+  tall, then sit down slowly", rep counts, "Ten seconds left"), so users never
+  have to read the screen mid-exercise.
+
+At the end, a summary shows reps done and the best steadiness score, plus a
+personal message from an **AI coach on Amazon Bedrock** (Amazon Nova Lite) that
+picks out one specific win and one tip for next time, and is read aloud.
+
+**Why a phone, not a camera?** Most Fire TV sticks have no camera, and many
+people don't want one pointed at them in their living room. The phone they
+already own is a private, zero-cost motion sensor.
+
+**Grounded in clinical practice:** the routine uses the moves from the CDC's
+STEADI fall-risk tests: the chair stand, and the 4-Stage Balance Test stances
+(feet together, semi-tandem, tandem), each held for 10 seconds. SteadyUp turns a
+clinic check into a daily home habit.
 
 ## How we built it
 
@@ -57,7 +72,13 @@ At the end, a summary shows reps done and the best steadiness score.
   steadiness, and impact plus stillness for fall prompts.
 - **Server:** a small Node.js service that pairs the TV and phone with a 4-digit
   code and QR, then relays messages over WebSockets.
-- **Testing:** 15 unit tests for pairing and the motion algorithms, plus an
+- **AI coach (AWS Builder):** the server calls the Amazon Bedrock Converse API
+  (Amazon Nova Lite) with a cleaned summary of the session. It caps the wait at
+  8 seconds, falls back to rule-based messages so the demo never breaks, and
+  rate-limits requests to control cost.
+- **Voice:** the TV sends coaching lines to the phone, which speaks them with the
+  Web Speech API. In the browser demo, the TV speaks them itself.
+- **Testing:** 23 unit tests for pairing and the motion algorithms, plus an
   end-to-end test that drives the TV app with a simulated phone, screenshots
   every screen, and checks that nothing overlaps or runs off a 1080p TV.
 
@@ -76,9 +97,10 @@ At the end, a summary shows reps done and the best steadiness score.
 ## What's next
 
 - Progress history ("steadiness up from 68 to 82 this month") and automatic level-ups
-- Spoken cues, so users never have to read the screen mid-exercise
+- Voice commands through Alexa ("Alexa, start my SteadyUp session")
+- Let the AI coach adapt tomorrow's targets from recent sessions
 - Optional sharing of the weekly summary with a family member or physiotherapist
-- Permanent hosting and an Amazon Appstore release
+- An Amazon Appstore release
 
 ## Note
 

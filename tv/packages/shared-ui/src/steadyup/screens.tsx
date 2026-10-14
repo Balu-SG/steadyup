@@ -1,10 +1,11 @@
 // SteadyUp TV screens: Home, Pair phone, Safety check, Summary.
 // The live exercise screen is in SessionScreen.tsx.
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Image, Text, View } from 'react-native';
 import { useIsFocused, useNavigation, useRoute } from '@react-navigation/native';
 import { DefaultFocus, SpatialNavigationNode, SpatialNavigationRoot } from 'react-tv-space-navigation';
 import SteadyButton from './SteadyButton';
+import { SERVER_URL } from './config';
 import { useSteadyLink } from './SteadyLink';
 import type { StepResult } from './plan';
 import { SESSION_MINUTES, TODAY } from './plan';
@@ -192,6 +193,31 @@ function resultValue(r: StepResult): { value: string; label: string; color: stri
   return { value: r.done ? '✓' : '–', label: r.done ? 'done' : 'skipped', color: r.done ? steady.ok : steady.muted };
 }
 
+type Coach = { text: string; source: 'bedrock' | 'rules' } | 'loading' | 'error';
+
+// Personal message from the AI coach (Amazon Bedrock on the server), also read aloud.
+function useCoach(results: StepResult[]): Coach {
+  const [coach, setCoach] = useState<Coach>('loading');
+  const { say } = useSteadyLink();
+  useEffect(() => {
+    let cancelled = false;
+    const payload = results.map((r) => ({ ...r, title: TODAY.find((st) => st.id === r.id)?.title ?? r.id }));
+    fetch(`${SERVER_URL}/api/coach`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ results: payload }) })
+      .then((res) => (res.ok ? res.json() : Promise.reject(res.status)))
+      .then((body) => {
+        if (cancelled) return;
+        setCoach(body);
+        say(`Well done. ${body.text}`);
+      })
+      .catch(() => !cancelled && setCoach('error'));
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  return coach;
+}
+
 export function SummaryScreen() {
   const isFocused = useIsFocused();
   const nav = useNav();
@@ -200,6 +226,7 @@ export function SummaryScreen() {
   const holds = results.filter((r): r is Extract<StepResult, { kind: 'hold' }> => r.kind === 'hold' && r.steadiness >= 0);
   const best = holds.length ? Math.max(...holds.map((h) => h.steadiness)) : null;
   const reps = results.find((r): r is Extract<StepResult, { kind: 'reps' }> => r.kind === 'reps');
+  const coach = useCoach(results);
 
   return (
     <SpatialNavigationRoot isActive={isFocused}>
@@ -216,22 +243,37 @@ export function SummaryScreen() {
           </View>
         </View>
 
-        {/* Three columns across the full width: 3 x 552 + 2 x 36 = 1728. */}
-        <View style={[s.row, { flexWrap: 'wrap', justifyContent: 'space-between', marginTop: px(40) }]}>
-          {results.map((r) => {
-            const step = TODAY.find((st) => st.id === r.id);
-            const v = resultValue(r);
-            return (
-              <Card key={r.id} style={{ width: px(552), marginBottom: px(24), paddingVertical: px(28), paddingHorizontal: px(36) }}>
-                <Text style={[type.overline, { color: steady.faint }]}>{step?.focus.toUpperCase()}</Text>
-                <Text style={[type.body, { fontWeight: '700', marginTop: px(4) }]} numberOfLines={1}>{step?.title ?? r.id}</Text>
-                <View style={[s.row, { marginTop: px(8), alignItems: 'flex-end' }]}>
-                  <Text style={[type.h2, { color: v.color }]}>{v.value}</Text>
-                  <Text style={[type.caption, { marginLeft: px(16), marginBottom: px(6) }]}>{v.label}</Text>
-                </View>
-              </Card>
-            );
-          })}
+        {/* Results in two columns (2 x 490 + 16 = 996) and the coach beside them (32 + 700). */}
+        <View style={[s.row, { alignItems: 'stretch', marginTop: px(32) }]}>
+          <View style={[s.row, { width: px(996), flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'flex-start' }]}>
+            {results.map((r) => {
+              const step = TODAY.find((st) => st.id === r.id);
+              const v = resultValue(r);
+              return (
+                <Card key={r.id} style={{ width: px(490), marginBottom: px(16), paddingVertical: px(20), paddingHorizontal: px(32) }}>
+                  <View style={[s.row, { justifyContent: 'space-between' }]}>
+                    <Text style={[type.overline, { color: steady.faint }]}>{step?.focus.toUpperCase()}</Text>
+                    <View style={[s.row, { alignItems: 'flex-end' }]}>
+                      <Text style={[type.h2, { color: v.color }]}>{v.value}</Text>
+                      <Text style={[type.caption, { marginLeft: px(12), marginBottom: px(6) }]}>{v.label}</Text>
+                    </View>
+                  </View>
+                  <Text style={[type.body, { fontSize: px(32), fontWeight: '700' }]} numberOfLines={1}>{step?.title ?? r.id}</Text>
+                </Card>
+              );
+            })}
+          </View>
+          <Card style={{ width: px(700), marginLeft: px(32), marginBottom: px(16), paddingVertical: px(32), paddingHorizontal: px(40) }}>
+            <View style={[s.row, { justifyContent: 'space-between' }]}>
+              <Text style={type.overline}>YOUR COACH</Text>
+              {typeof coach === 'object' && coach.source === 'bedrock' && (
+                <Text style={[type.caption, { color: steady.faint }]}>AI · Amazon Bedrock</Text>
+              )}
+            </View>
+            <Text style={[type.bodyMuted, { color: steady.text, marginTop: px(16) }]} numberOfLines={8}>
+              {coach === 'loading' ? 'Looking at today\'s results…' : coach === 'error' ? 'Great session. See you tomorrow!' : coach.text}
+            </Text>
+          </Card>
         </View>
 
         <View style={{ marginTop: px(16), alignSelf: 'flex-start' }}>

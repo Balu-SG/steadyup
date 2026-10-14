@@ -7,13 +7,20 @@ exercises cut the risk, but people stop doing them at home: nobody counts the
 reps, nobody tells you whether you're getting steadier, and exercise apps on a
 small phone screen are hard to follow.
 
-SteadyUp puts a guided 5-minute session on the TV, controlled with the remote.
+SteadyUp turns the moves behind the CDC's STEADI fall-prevention tests (chair
+stands and the feet together, semi-tandem and tandem balance stances, held for
+10 seconds each) into a guided 5-minute routine on the TV, controlled with the remote.
 The user scans a QR code with their phone and puts the phone in their front
 trouser pocket. From then on:
 
 - **sit-to-stands are counted automatically** from the angle of the thigh
 - **balance holds get a live steadiness score** from how much the body sways
 - **a sudden impact followed by stillness** triggers an "Are you OK?" prompt on the TV
+- **a spoken coach** talks you through each move ("Stand up tall, then sit down
+  slowly", rep counts, "Ten seconds left") through the phone's speaker, so
+  nobody has to read the screen mid-exercise
+- **an AI coach on Amazon Bedrock** writes a short personal message about
+  today's results on the summary screen, and reads it aloud
 
 There's no app to install on the phone and nothing to wear. It runs in the
 phone's browser.
@@ -77,6 +84,25 @@ and runs in the phone's browser:
 - **Steadiness:** the RMS spread of acceleration over the hold, ignoring the
   first 1.5 s while the person settles, mapped to a 0–100 score.
 - **Possible fall:** an impact above 2.5 g followed by 2 s of stillness.
+
+## AI coach (Amazon Bedrock)
+
+When a session ends, the TV posts the results to `POST /api/coach`. The server
+([`server/src/coach.js`](server/src/coach.js)) cleans the input, describes the
+results in plain lines, and calls the **Amazon Bedrock Converse API** with
+**Amazon Nova Lite** (`us.amazon.nova-lite-v1:0`, set by `BEDROCK_MODEL_ID`).
+The system prompt asks for two encouraging sentences: one specific win and one
+practical tip, with no medical advice. The TV shows the reply in a "Your coach"
+card and the phone reads it aloud.
+
+The coach always answers: if Bedrock isn't configured, takes longer than 8
+seconds, or fails, the server returns a rule-based message instead. Requests are
+limited to 20 per client per 10 minutes.
+
+To enable it, give an IAM user `bedrock:InvokeModel` permission, make sure
+Amazon Nova Lite is available to the account in `us-east-1`, and set
+`AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` on the Render service (see
+[`render.yaml`](render.yaml)).
 
 ## Repository layout
 
@@ -142,7 +168,7 @@ trouser pocket, screen facing your leg.
 ## Tests
 
 ```bash
-cd server && npm test              # 15 tests: pairing, relay, rep counting, steadiness, fall detection
+cd server && npm test              # 23 tests: pairing, relay, rep counting, steadiness, fall detection, AI coach
 ```
 
 End-to-end, with the TV web build served on port 8090, against the live server:
@@ -152,8 +178,8 @@ node scripts/e2e-tv.mjs http://localhost:8090 https://steadyup.onrender.com out/
 ```
 
 The test pairs a simulated phone, runs the whole session, saves a screenshot of
-every screen to `out/e2e/`, and fails any screen where content overlaps the
-footer or runs off a 1920×1080 TV.
+every screen to `out/e2e/`, prints every spoken coaching cue the phone receives,
+and fails if content on any screen overlaps the footer or runs off a 1920×1080 TV.
 
 To record the demo video, set `E2E_RECORD=<frames-dir>` and then run
 `node scripts/make-video.mjs <frames-dir> out/steadyup-demo.mp4`.
@@ -162,4 +188,5 @@ To record the demo video, set `E2E_RECORD=<frames-dir>` and then run
 
 SteadyUp is not a medical device. It encourages exercise and gives feedback; it
 doesn't diagnose anything, and its fall prompt doesn't replace an emergency
-alarm.
+alarm. The exercises are based on the moves in the CDC's STEADI tests, but
+SteadyUp is not a clinical assessment.
