@@ -92,7 +92,7 @@ export function createServer({ store = createSessionStore(), coach = createCoach
       const use = coachUse.get(ip);
       if (!use || now - use.since > COACH_WINDOW_MS) coachUse.set(ip, { since: now, count: 1 });
       else if (++use.count > COACH_LIMIT) return sendJson(res, 429, { error: 'too_many_requests' });
-      return sendJson(res, 200, await coach(body.results));
+      return sendJson(res, 200, await coach(body.results, body.history));
     }
     // PNG QR for TV apps that cannot render SVG.
     const qrMatch = path.match(/^\/api\/sessions\/(\d{4})\/qr\.png$/);

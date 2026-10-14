@@ -11,7 +11,9 @@ const SYSTEM_PROMPT = `You are a warm, encouraging exercise coach for older adul
 5-minute strength and balance routine at home, guided by their TV. Write exactly two short
 sentences, 35 words at most in total: first celebrate one specific result from today, then give
 one practical tip for next time. Steadiness is a 0-100 score from phone motion sensors; higher
-means steadier. If any steadiness is below 60, suggest resting fingertips on the chair. Plain
+means steadier. If any steadiness is below 60, suggest resting fingertips on the chair. If earlier sessions
+are listed, you may mention one real improvement or the habit of coming back, using only the
+numbers given. Plain
 text only: no emoji, no lists, no medical advice or diagnosis, and never mention falling or
 fall risk.`;
 
@@ -29,6 +31,21 @@ export function sanitizeResults(input) {
     if (r.kind === 'timed' || r.kind === 'selfPaced') return [{ title, kind: r.kind, done: Boolean(r.done) }];
     return [];
   });
+}
+
+// Earlier sessions kept on the user's phone: [{date, reps, best}], oldest first.
+export function sanitizeHistory(input) {
+  if (!Array.isArray(input)) return [];
+  return input.slice(-7).flatMap((s) => {
+    if (!s || typeof s !== 'object' || !/^\d{4}-\d{2}-\d{2}$/.test(String(s.date))) return [];
+    return [{ date: s.date, reps: num(s.reps, 0, 999) ?? 0, best: num(s.best, 0, 100) }];
+  });
+}
+
+export function describeHistory(history) {
+  return history
+    .map((s) => `- ${s.date}: ${s.reps} sit-to-stands${s.best !== null ? `, best steadiness ${s.best}/100` : ''}`)
+    .join('\n');
 }
 
 export function describe(results) {
@@ -61,8 +78,10 @@ export function createCoach({
   modelId = process.env.BEDROCK_MODEL_ID ?? DEFAULT_MODEL_ID,
   timeoutMs = TIMEOUT_MS,
 } = {}) {
-  return async function coach(rawResults) {
+  return async function coach(rawResults, rawHistory) {
     const results = sanitizeResults(rawResults);
+    const history = sanitizeHistory(rawHistory);
+    const prompt = `Today's results:\n${describe(results)}${history.length ? `\n\nEarlier sessions (oldest first):\n${describeHistory(history)}` : ''}`;
     const fallback = { text: fallbackMessage(results), source: 'rules' };
     if (!client || results.length === 0) return fallback;
     const abort = new AbortController();
@@ -72,7 +91,7 @@ export function createCoach({
         new ConverseCommand({
           modelId,
           system: [{ text: SYSTEM_PROMPT }],
-          messages: [{ role: 'user', content: [{ text: `Today's results:\n${describe(results)}` }] }],
+          messages: [{ role: 'user', content: [{ text: prompt }] }],
           inferenceConfig: { maxTokens: 160, temperature: 0.6 },
         }),
         { abortSignal: abort.signal },

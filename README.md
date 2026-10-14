@@ -21,6 +21,9 @@ trouser pocket. From then on:
   nobody has to read the screen mid-exercise
 - **an AI coach on Amazon Bedrock** writes a short personal message about
   today's results on the summary screen, and reads it aloud
+- **progress and streaks** (day streak, sessions this week, steadiness trend)
+  are kept **on the user's phone**: private, no account needed. A **Share my
+  progress** button sends a summary to family through WhatsApp, SMS or email
 
 There's no app to install on the phone and nothing to wear. It runs in the
 phone's browser.
@@ -168,7 +171,7 @@ trouser pocket, screen facing your leg.
 ## Tests
 
 ```bash
-cd server && npm test              # 23 tests: pairing, relay, rep counting, steadiness, fall detection, AI coach
+cd server && npm test              # 29 tests: pairing, relay, rep counting, steadiness, fall detection, AI coach, history
 ```
 
 End-to-end, with the TV web build served on port 8090, against the live server:

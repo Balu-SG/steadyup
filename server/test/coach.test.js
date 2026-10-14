@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { once } from 'node:events';
-import { createCoach, describe, fallbackMessage, sanitizeResults } from '../src/coach.js';
+import { createCoach, describe, describeHistory, fallbackMessage, sanitizeHistory, sanitizeResults } from '../src/coach.js';
 import { createServer } from '../src/index.js';
 
 const RESULTS = [
@@ -66,4 +66,14 @@ test('POST /api/coach returns a message and rate-limits a busy client', async ()
   for (let i = 0; i < 20; i++) last = await post('{}');
   assert.equal(last.status, 429);
   server.close();
+});
+
+test('earlier sessions are cleaned and passed to the model', async () => {
+  const history = sanitizeHistory([{ date: '2026-10-12', reps: 4, best: 72, x: 1 }, { date: 'yesterday', reps: 1 }, { date: '2026-10-13', reps: 5, best: null }]);
+  assert.deepEqual(history, [{ date: '2026-10-12', reps: 4, best: 72 }, { date: '2026-10-13', reps: 5, best: null }]);
+  assert.equal(describeHistory(history), '- 2026-10-12: 4 sit-to-stands, best steadiness 72/100\n- 2026-10-13: 5 sit-to-stands');
+  let sent;
+  const client = { send: async (cmd) => ((sent = cmd.input), { output: { message: { content: [{ text: 'ok' }] } } }) };
+  await createCoach({ client })(RESULTS, history);
+  assert.match(sent.messages[0].content[0].text, /Earlier sessions \(oldest first\):\n- 2026-10-12: 4 sit-to-stands/);
 });

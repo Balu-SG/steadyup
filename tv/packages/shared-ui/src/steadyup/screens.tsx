@@ -7,6 +7,7 @@ import { DefaultFocus, SpatialNavigationNode, SpatialNavigationRoot } from 'reac
 import SteadyButton from './SteadyButton';
 import { SERVER_URL } from './config';
 import { useSteadyLink } from './SteadyLink';
+import type { Progress } from './SteadyLink';
 import type { StepResult } from './plan';
 import { SESSION_MINUTES, TODAY } from './plan';
 import { px, s, steady, type } from './theme';
@@ -29,10 +30,25 @@ function greeting(): string {
   return h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening';
 }
 
+// Streak plus steadiness trend (or sessions this week), from the phone's history.
+function ProgressStats({ progress }: { progress: Progress }) {
+  const improved = progress.steadinessFrom !== null && progress.steadinessTo !== null && progress.steadinessTo > progress.steadinessFrom;
+  return (
+    <>
+      <View style={{ marginRight: px(80) }}><Stat value={`${progress.streak}`} label="day streak" color={steady.accent} /></View>
+      {improved ? (
+        <Stat value={`${progress.steadinessTo}`} label={`steadiness (was ${progress.steadinessFrom})`} color={steady.ok} />
+      ) : (
+        <Stat value={`${progress.thisWeek}`} label="sessions this week" />
+      )}
+    </>
+  );
+}
+
 export function SteadyHomeScreen() {
   const isFocused = useIsFocused();
   const nav = useNav();
-  const { phoneConnected } = useSteadyLink();
+  const { phoneConnected, progress } = useSteadyLink();
   const focusCounts = TODAY.reduce<Record<string, number>>((acc, st) => ({ ...acc, [st.focus]: (acc[st.focus] ?? 0) + 1 }), {});
 
   return (
@@ -51,8 +67,14 @@ export function SteadyHomeScreen() {
             <View style={[s.row, { marginTop: px(24) }]}>
               <View style={{ marginRight: px(80) }}><Stat value={`${TODAY.length}`} label="exercises" /></View>
               <View style={{ marginRight: px(80) }}><Stat value={`${SESSION_MINUTES}`} label="minutes" /></View>
-              <View style={{ marginRight: px(80) }}><Stat value={`${focusCounts.Strength ?? 0}`} label="strength" /></View>
-              <Stat value={`${focusCounts.Balance ?? 0}`} label="balance" />
+              {progress && progress.sessions > 0 ? (
+                <ProgressStats progress={progress} />
+              ) : (
+                <>
+                  <View style={{ marginRight: px(80) }}><Stat value={`${focusCounts.Strength ?? 0}`} label="strength" /></View>
+                  <Stat value={`${focusCounts.Balance ?? 0}`} label="balance" />
+                </>
+              )}
             </View>
             <View style={{ marginTop: px(32) }}>
               <SpatialNavigationNode orientation="horizontal">
@@ -198,11 +220,13 @@ type Coach = { text: string; source: 'bedrock' | 'rules' } | 'loading' | 'error'
 // Personal message from the AI coach (Amazon Bedrock on the server), also read aloud.
 function useCoach(results: StepResult[]): Coach {
   const [coach, setCoach] = useState<Coach>('loading');
-  const { say } = useSteadyLink();
+  const { say, progress } = useSteadyLink();
   useEffect(() => {
     let cancelled = false;
     const payload = results.map((r) => ({ ...r, title: TODAY.find((st) => st.id === r.id)?.title ?? r.id }));
-    fetch(`${SERVER_URL}/api/coach`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ results: payload }) })
+    // Earlier sessions from the phone, so the coach can mention real progress.
+    const history = progress?.recent ?? [];
+    fetch(`${SERVER_URL}/api/coach`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ results: payload, history }) })
       .then((res) => (res.ok ? res.json() : Promise.reject(res.status)))
       .then((body) => {
         if (cancelled) return;
@@ -227,6 +251,11 @@ export function SummaryScreen() {
   const best = holds.length ? Math.max(...holds.map((h) => h.steadiness)) : null;
   const reps = results.find((r): r is Extract<StepResult, { kind: 'reps' }> => r.kind === 'reps');
   const coach = useCoach(results);
+  const { recordSession, progress } = useSteadyLink();
+  useEffect(() => {
+    recordSession({ reps: reps?.reps ?? 0, best, exercises: results.length });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <SpatialNavigationRoot isActive={isFocused}>
@@ -237,7 +266,11 @@ export function SummaryScreen() {
             <Text style={[type.display, { marginTop: px(12) }]}>Well done ★</Text>
           </View>
           <View style={s.row}>
-            <View style={{ marginLeft: px(96) }}><Stat value={`${results.length}`} label="exercises done" color={steady.ok} /></View>
+            {progress && progress.streak > 0 ? (
+              <View style={{ marginLeft: px(96) }}><Stat value={`${progress.streak}`} label="day streak" color={steady.ok} /></View>
+            ) : (
+              <View style={{ marginLeft: px(96) }}><Stat value={`${results.length}`} label="exercises done" color={steady.ok} /></View>
+            )}
             {reps && <View style={{ marginLeft: px(96) }}><Stat value={`${reps.reps}`} label="sit-to-stands" /></View>}
             {best !== null && <View style={{ marginLeft: px(96) }}><Stat value={`${best}`} label="best steadiness" color={steady.accent} /></View>}
           </View>

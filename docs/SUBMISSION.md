@@ -51,6 +51,11 @@ At the end, a summary shows reps done and the best steadiness score, plus a
 personal message from an **AI coach on Amazon Bedrock** (Amazon Nova Lite) that
 picks out one specific win and one tip for next time, and is read aloud.
 
+**Progress that brings people back:** each session is saved **on the user's
+phone** (private, no account). The TV shows a day streak and the steadiness
+trend ("79, was 72"), the AI coach can mention real improvement, and a **Share
+my progress** button sends a summary to family.
+
 **Why a phone, not a camera?** Most Fire TV sticks have no camera, and many
 people don't want one pointed at them in their living room. The phone they
 already own is a private, zero-cost motion sensor.
@@ -78,7 +83,10 @@ clinic check into a daily home habit.
   rate-limits requests to control cost.
 - **Voice:** the TV sends coaching lines to the phone, which speaks them with the
   Web Speech API. In the browser demo, the TV speaks them itself.
-- **Testing:** 23 unit tests for pairing and the motion algorithms, plus an
+- **Progress:** the phone keeps session history in local storage and sends the
+  TV a streak, sessions this week and steadiness trend when it connects; the
+  share button uses the Web Share API.
+- **Testing:** 29 unit tests for pairing and the motion algorithms, plus an
   end-to-end test that drives the TV app with a simulated phone, screenshots
   every screen, and checks that nothing overlaps or runs off a 1080p TV.
 
@@ -96,7 +104,7 @@ clinic check into a daily home habit.
 
 ## What's next
 
-- Progress history ("steadiness up from 68 to 82 this month") and automatic level-ups
+- Automatic level-ups when a user's results improve
 - Voice commands through Alexa ("Alexa, start my SteadyUp session")
 - Let the AI coach adapt tomorrow's targets from recent sessions
 - Optional sharing of the weekly summary with a family member or physiotherapist

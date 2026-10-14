@@ -163,7 +163,8 @@ const LAYOUT_CHECK = `(() => {
     if (r.width === 0 || r.height === 0) continue;
     if (r.width >= innerWidth && r.height >= H - 1) continue; // full-screen containers
     const label = (el.innerText || '').trim().split('\\n')[0].slice(0, 40) || '(box)';
-    if (r.bottom > H + 1 && r.top < H) out.push('cut off at bottom: ' + label);
+    if (r.right > innerWidth + 1 && r.left < innerWidth) out.push('cut off at right: ' + label);
+    else if (r.bottom > H + 1 && r.top < H) out.push('cut off at bottom: ' + label);
     else if (r.top >= H) out.push('off screen: ' + label);
     else if (hr && r.bottom > hr.top + 1 && r.top < hr.bottom && r.right > hr.left && r.left < hr.right) out.push('overlaps hint by ' + Math.round(r.bottom - hr.top) + 'px: ' + label);
   }
@@ -208,10 +209,21 @@ await new Promise((r) => phone.on('open', r));
 let mode = 'idle';
 const holdScores = [91, 84, 72];
 const spoken = []; // spoken coaching the TV asked the phone to say
+const recorded = []; // sessions the TV asked the phone to add to its history
+// The phone's history from two earlier days, sent when it connects.
+const pastStats = {
+  sessions: 2, streak: 2, thisWeek: 2, steadinessFrom: 72, steadinessTo: 79,
+  recent: [{ date: '2026-10-12', reps: 4, best: 72, exercises: 6 }, { date: '2026-10-13', reps: 5, best: 79, exercises: 6 }],
+};
 const send = (m) => phone.send(JSON.stringify(m));
+send({ type: 'history', stats: pastStats });
 phone.on('message', (d) => {
   const m = JSON.parse(d);
   if (m.type === 'say') spoken.push(m.text);
+  if (m.type === 'session_done') {
+    recorded.push(m.session);
+    send({ type: 'history', stats: { ...pastStats, sessions: 3, streak: 3, thisWeek: 3, steadinessTo: m.session.best, recent: [...pastStats.recent, { date: '2026-10-14', ...m.session }] } });
+  }
   if (m.type === 'mode') {
     if (mode === 'hold' && m.mode !== 'hold') {
       send({ type: 'event', event: { type: 'hold_end', steadiness: holdScores.shift() ?? 80, durationMs: 8500, meanRms: 0.07, perSecond: [] } });
@@ -232,6 +244,7 @@ await linger(2000);
 // Back home, start the session.
 await press('Enter'); // "Continue" (no next) -> back
 await sleep(800);
+await screenshot('home-progress');
 await press('ArrowLeft');
 await press('Enter'); // Start today's session -> Safety
 await sleep(800);
@@ -311,6 +324,7 @@ await titleCard('Fire TV · Vega OS · Android TV  +  any phone browser');
 stopRecording();
 console.log('--- summary text ---\n' + (await bodyText()));
 console.log(`--- ${spoken.length} spoken cues ---\n` + spoken.join('\n'));
+console.log('--- sessions recorded on the phone ---\n' + JSON.stringify(recorded));
 
 console.log(layoutProblems.length ? `--- ${layoutProblems.length} layout problem(s) ---\n${layoutProblems.join('\n')}` : '--- layout OK on every screen ---');
 if (layoutProblems.length) process.exitCode = 1;

@@ -15,6 +15,17 @@ export type PhoneEvent =
   | { type: 'hold_end'; steadiness: number; durationMs: number; meanRms: number; perSecond: number[] }
   | { type: 'possible_fall' };
 
+// Progress the phone keeps (server/public/history.js); null until a phone sends it.
+export type Progress = {
+  sessions: number;
+  streak: number;
+  thisWeek: number;
+  steadinessFrom: number | null;
+  steadinessTo: number | null;
+  recent: { date: string; reps: number; best: number | null; exercises: number }[];
+};
+export type SessionSummary = { reps: number; best: number | null; exercises: number };
+
 type Status = 'creating' | 'ready' | 'error';
 
 export type SteadyLink = {
@@ -23,6 +34,9 @@ export type SteadyLink = {
   qrUri: string | null;
   phoneConnected: boolean;
   live: LiveState;
+  progress: Progress | null;
+  // Tell the phone a session finished, so it can add it to the user's history.
+  recordSession: (session: SessionSummary) => void;
   setMode: (mode: LiveState['mode']) => void;
   calibrate: () => void;
   // Spoken coaching: the phone speaks it; without a phone, the TV speaks it if it can.
@@ -39,6 +53,7 @@ export function SteadyLinkProvider({ children }: { children: React.ReactNode }) 
   const [code, setCode] = useState<string | null>(null);
   const [phoneConnected, setPhoneConnected] = useState(false);
   const [live, setLive] = useState<LiveState>(IDLE);
+  const [progress, setProgress] = useState<Progress | null>(null);
   const [attempt, setAttempt] = useState(0);
   const wsRef = useRef<WebSocket | null>(null);
   const listeners = useRef(new Set<(ev: PhoneEvent) => void>());
@@ -80,6 +95,7 @@ export function SteadyLinkProvider({ children }: { children: React.ReactNode }) 
           setLive({ mode: msg.mode, reps: msg.reps, standing: msg.standing, angle: msg.angle, steadiness: msg.steadiness });
         }
         if (msg.type === 'event') listeners.current.forEach((l) => l(msg.event));
+        if (msg.type === 'history' && msg.stats) setProgress(msg.stats);
       };
       ws.onclose = (e) => {
         setPhoneConnected(false);
@@ -126,6 +142,8 @@ export function SteadyLinkProvider({ children }: { children: React.ReactNode }) 
       qrUri: code ? `${SERVER_URL}/api/sessions/${code}/qr.png` : null,
       phoneConnected,
       live,
+      progress,
+      recordSession: (session) => send({ type: 'session_done', session }),
       setMode: (mode) => send({ type: 'mode', mode }),
       calibrate: () => send({ type: 'calibrate' }),
       say,
@@ -137,7 +155,7 @@ export function SteadyLinkProvider({ children }: { children: React.ReactNode }) 
       },
       newSession: () => setAttempt((a) => a + 1),
     }),
-    [status, code, phoneConnected, live, send, say],
+    [status, code, phoneConnected, live, progress, send, say],
   );
 
   return <SteadyLinkContext.Provider value={value}>{children}</SteadyLinkContext.Provider>;

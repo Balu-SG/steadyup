@@ -18,6 +18,8 @@
     button { font: inherit; font-size: 26px; font-weight: 700; border: 0; border-radius: 999px;
              padding: 22px 48px; background: var(--accent); color: #1c1c1c; min-width: 240px; }
     button:disabled { opacity: .5; }
+    button.secondary { background: transparent; color: var(--fg); border: 2px solid var(--muted); font-size: 20px; padding: 14px 32px; }
+    [hidden] { display: none !important; }
     #status { font-size: 18px; padding: 8px 16px; border-radius: 999px; background: rgba(255,255,255,.08); }
     #status.ok, #wake.ok { color: var(--ok); } #status.bad, #wake.bad { color: var(--bad); }
     #wake { font-size: 16px; max-width: 30ch; }
@@ -36,6 +38,8 @@
     <div class="muted" id="detail">reps</div>
   </div>
   <div id="status">Not connected</div>
+  <p class="muted" id="progress"></p>
+  <button id="share" class="secondary" hidden>Share my progress</button>
   <div id="wake" class="muted"></div>
   <script type="module" src="/phone.js"></script>
 </body>

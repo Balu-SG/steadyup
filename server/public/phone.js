@@ -1,5 +1,6 @@
 // Phone sensor page: devicemotion -> motion tracker -> WebSocket to the TV.
 import { createMotionTracker } from '/motion.js';
+import { addSession, shareText, stats, toRecord } from '/history.js';
 
 const SEND_EVERY_MS = 100; // 10 updates per second
 const code = location.pathname.split('/').pop();
@@ -10,6 +11,35 @@ let ws = null;
 let wakeLock = null;
 let lastSent = 0;
 let started = false;
+
+// Session history lives on this phone (see history.js).
+const HISTORY_KEY = 'steadyup.history';
+function loadHistory() {
+  try {
+    const h = JSON.parse(localStorage.getItem(HISTORY_KEY) ?? '[]');
+    return Array.isArray(h) ? h : [];
+  } catch {
+    return [];
+  }
+}
+function saveHistory(h) {
+  try {
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(h));
+  } catch {
+    // Private mode or storage full: progress just isn't kept.
+  }
+}
+function sendHistory() {
+  const history = loadHistory();
+  send({ type: 'history', stats: stats(history) });
+  showProgress(history);
+}
+function showProgress(history) {
+  if (!history.length) return;
+  const s = stats(history);
+  $('progress').textContent = `${s.streak > 1 ? `${s.streak}-day streak · ` : ''}${s.thisWeek} session${s.thisWeek === 1 ? '' : 's'} this week`;
+  $('share').hidden = false;
+}
 
 function setStatus(text, kind = '') {
   $('status').textContent = text;
@@ -32,7 +62,10 @@ function speak(text) {
 function connect() {
   const proto = location.protocol === 'https:' ? 'wss' : 'ws';
   ws = new WebSocket(`${proto}://${location.host}/ws?code=${code}&role=phone`);
-  ws.onopen = () => setStatus(`Connected to TV · code ${code}`, 'ok');
+  ws.onopen = () => {
+    setStatus(`Connected to TV · code ${code}`, 'ok');
+    sendHistory();
+  };
   ws.onclose = (e) => {
     if (e.code === 4404) return setStatus('This code has expired. Scan the TV again.', 'bad');
     setStatus('Reconnecting…', 'bad');
@@ -42,6 +75,10 @@ function connect() {
     const msg = JSON.parse(e.data);
     if (msg.type === 'mode') tracker.setMode(msg.mode);
     if (msg.type === 'calibrate') tracker.calibrate();
+    if (msg.type === 'session_done') {
+      saveHistory(addSession(loadHistory(), toRecord(msg.session)));
+      sendHistory();
+    }
     if (msg.type === 'say' && started && typeof msg.text === 'string') speak(msg.text.slice(0, 300));
     if (msg.type === 'mode' || msg.type === 'calibrate') navigator.vibrate?.(60);
   };
@@ -112,8 +149,23 @@ $('start').addEventListener('click', async () => {
   send({ type: 'hello', ua: navigator.userAgent, wakeLock: awake });
 });
 
+// Share progress with family (WhatsApp, SMS, ...), or copy it.
+$('share').addEventListener('click', async () => {
+  const text = shareText(loadHistory());
+  try {
+    if (navigator.share) await navigator.share({ text });
+    else {
+      await navigator.clipboard.writeText(text);
+      $('share').textContent = 'Copied ✓';
+    }
+  } catch {
+    // Share sheet dismissed.
+  }
+});
+
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible' && started) keepAwake();
 });
 
+showProgress(loadHistory());
 connect();
