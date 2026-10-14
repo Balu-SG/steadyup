@@ -11,7 +11,7 @@ go on (step 2 below).
 
 - [ ] Charge the phone and the laptop. Bring the laptop charger.
 - [ ] Download the backup video `out/steadyup-demo.mp4` to the laptop **and**
-      the phone, in case Wi-Fi or the tunnel fails.
+      the phone, in case Wi-Fi or the server fails.
 - [ ] Bring a **sturdy chair without wheels** for the sit-to-stand and balance demo.
 - [ ] Wear trousers with a **front pocket** that holds the phone snugly.
 
@@ -19,7 +19,7 @@ go on (step 2 below).
 
 1. **Join the venue Wi-Fi** with the laptop, the phone and (if used) the Fire TV.
    Some venue networks block device-to-device traffic. The demo only needs
-   internet access, not a local network, because everything goes through the tunnel.
+   internet access, not a local network, because everything goes through the Render server.
 2. **Wake the server:** open **https://steadyup.onrender.com/health** on the
    phone. Wait until it shows `{"ok":true,...}` (up to a minute if it was asleep).
 3. **Check the TV app points at Render:** `tv/packages/shared-ui/src/steadyup/config.ts`
