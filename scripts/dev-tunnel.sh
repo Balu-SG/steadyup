@@ -18,7 +18,7 @@ trap 'kill $TUNNEL_PID 2>/dev/null; pkill -f "node src/index.js" 2>/dev/null' EX
 
 URL=""
 for _ in $(seq 1 30); do
-  URL=$(grep -o 'https://[a-z0-9-]*\.trycloudflare\.com' "$OUT/tunnel.log" | head -1 || true)
+  URL=$(grep -a -o 'https://[a-z0-9-]*\.trycloudflare\.com' "$OUT/tunnel.log" | grep -v '^https://api\.' | head -1 || true)
   [ -n "$URL" ] && break
   sleep 1
 done
