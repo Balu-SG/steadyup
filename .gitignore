@@ -1,0 +1,9 @@
+node_modules/
+.env
+.env.local
+out/
+.DS_Store
+
+# Yarn cache and the template demo GIF (22 MB)
+tv/.yarn/install-state.gz
+tv/tvdemo.gif
