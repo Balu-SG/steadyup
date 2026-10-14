@@ -1,0 +1,14 @@
+# Render blueprint: deploys the SteadyUp pairing/relay server with HTTPS.
+# render.com -> New -> Blueprint -> pick this repo.
+services:
+  - type: web
+    name: steadyup
+    runtime: node
+    plan: free
+    rootDir: server
+    buildCommand: npm ci
+    startCommand: node src/index.js
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
