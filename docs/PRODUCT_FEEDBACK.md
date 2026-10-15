@@ -3,8 +3,9 @@
 For the Devpost "Product feedback" field and the optional friction log. Every
 entry below is something we hit while building SteadyUp in October 2026, on a
 **Fire TV Stick HD (2nd generation)** running **Vega OS 2.0**, with Vega SDK
-0.24.12112 and Vega CLI 1.4.4 on macOS. Edit the parts marked **[YOU: …]**
-before submitting.
+0.24.12112 and Vega CLI 1.4.4 on an Apple-silicon Mac (macOS). We could not
+get our build onto the real stick, so the final app was tested and recorded on
+the **Vega Virtual Device**.
 
 ## Product feedback
 
@@ -39,10 +40,37 @@ before submitting.
   - After registering, the device still refused connections on port 5555
     (`vda connect 192.168.1.4` → "Connection refused"), and `vega device list`
     showed "No devices found". There was no on-device "network debugging"
-    switch to look for. **[YOU: describe how you finally installed the app,
-    e.g. USB cable / Vega app / other.]**
-- **Onboarding:** the longest part of the whole project was getting the stick
-  ready to accept our build.
+    switch to look for. **We never got the stick to accept a connection**, so
+    we moved to the Vega Virtual Device for testing and the demo video.
+- **Onboarding:** the longest part of the whole project was trying to get the
+  stick ready to accept our build, and it didn't work in the end.
+
+### Vega Virtual Device (`vega virtual-device`)
+- **Used for:** running, testing and recording the demo of the Vega OS build
+  (`vega run-app build/aarch64-release/vega_aarch64.vpkg`).
+- **What worked well:** once it started, it booted in under a minute, `vega
+  run-app` installed and launched our release build first time, and the
+  on-screen remote made manual testing easy. `vda shell inputd-cli button_press
+  KEY_RIGHT` injected remote keys instantly, which let us script a full session
+  for the demo recording.
+- **What needs work:**
+  - `vega virtual-device start` failed with "Vega Virtual Device not found at
+    …/vvd/images/tv, please verify the installation". The SDK installer had
+    downloaded the 923 MB image (`~/vega/sdk/vega-virtual-device/main/0.24.12112`,
+    a bzip2 tarball with no extension) but never unpacked it, and reported no
+    error. We only found it by searching the disk, then unpacked it into
+    `vvd/images/tv` ourselves.
+  - The CLI help shows `vega component install vvd`, but running it says
+    `"vvd" is not a recognized Vega component`, and `vega component list-remote`
+    lists nothing, so there was no supported way to repair the install.
+  - `screenshooter /tmp/s.png` on the device took about 35 seconds and failed
+    with "Error marshalling arguments for shoot (signature oo): null value passed
+    for arg 1". We recorded the Mac window instead.
+  - Every command prints warnings such as `vvman command not found` and reports
+    "SDK version retrieved from kepler: 0.200.0" while the active SDK is
+    0.24.12112, which makes it hard to tell real errors from noise.
+- **Would we build with it again?** Yes. It's the quickest way to test Vega OS
+  without hardware, once it is installed properly.
 
 ### React Native for Vega and the multi-TV template (`react-native-multi-tv-app-sample`)
 - **Used for:** the starting point of our TV app: one shared UI package for the
@@ -83,9 +111,9 @@ before submitting.
   only means changing `BEDROCK_MODEL_ID`. The JavaScript SDK supports an abort
   signal, so we can cap the wait at 8 seconds and fall back to a rule-based
   message.
-- **What needs work:** **[YOU: fill in after enabling Bedrock, e.g. how model
-  access and IAM setup felt, and whether the `us.` inference-profile ID was
-  clear.]**
+- **What needs work:** we didn't switch Bedrock on for the hosted demo in time,
+  so the live server currently uses the rule-based fallback. We can't comment on
+  model access or IAM setup yet.
 
 ## Friction log
 
@@ -93,7 +121,11 @@ before submitting.
 |---|---|---|---|---|---|---|---|
 | 1 | Find out which OS the Fire TV Stick HD (2nd gen) runs | Settings → My Fire TV → About | OS name (Fire OS or Vega OS) | "OS 2.0 (2602000051520)" only | Medium | Port scan: adb port closed, so probably Vega | Show "Vega OS 2.0" in About |
 | 2 | Enable developer mode on Vega OS | About ×7 → Developer options | A switch, or instructions | Only a QR code with no explanation | Medium | Scanned it and followed the web flow | Add one line of text: "Scan to register this device to your developer account, then …" |
-| 3 | Connect to the device over Wi-Fi after registering | `vda connect 192.168.1.4`, `vega device list` | Device listed | "Connection refused" on 5555; "No devices found" | High | **[YOU: what worked]** | Show the connection method and status on the Developer options screen |
+| 3 | Connect to the device over Wi-Fi after registering | `vda connect 192.168.1.4`, `vega device list` | Device listed | "Connection refused" on 5555; "No devices found" | High | None found: we switched to the Vega Virtual Device | Show the connection method and status on the Developer options screen, and a troubleshooting link |
 | 4 | Use the multi-TV template's web build in a browser window | Ran the web build at 1920×993 and laptop sizes | The 16:9 layout fits | Content overflows into the footer (scaling by diagonal) | Low | We wrapped the app in a scaled 1920×1080 iframe | Scale by `min(w/1920, h/1080)` in the template |
 | 5 | Build the Vega package | `yarn build:vega` | Clean build | Output path contains `undefined`; manifest process-group warnings | Low | Ignored | Fix the path and update the template manifest |
 | 6 | Share UI code between the Vega app (RN 0.72) and Expo (RN 0.81) | Used one shared-ui package | Same APIs on both | Newer RN APIs unavailable on Vega | Low | Used only basic Views | Publish an RN version / API compatibility table for Vega |
+| 7 | Start the Vega Virtual Device | `vega virtual-device start` | Simulator boots | "Vega Virtual Device not found at …/vvd/images/tv"; the installer had downloaded the 923 MB image but never unpacked it, with no error | High | Found the tarball in `~/vega/sdk/vega-virtual-device/` and unpacked it into `vvd/images/tv` by hand | Unpack and verify the image during install, or make `start` offer to repair it |
+| 8 | Repair the simulator with the component manager | `vega component install vvd`, `vega component list-remote` | VVD installed | `"vvd" is not a recognized Vega component`; the remote list is empty | Medium | Manual unpack (row 7) | Make the help examples match the real component names, or show why the list is empty (sign-in? channel?) |
+| 9 | Take a screenshot on the simulator | `vda shell 'screenshooter /tmp/s.png'` | PNG in about a second | 35 s, then "Error marshalling arguments for shoot … null value passed for arg 1" | Low | Recorded the Mac window with ffmpeg | Add a working `vega device screenshot` command |
+| 10 | Read simulator command output | Any `vega virtual-device` command | Clean output | `vvman command not found` warnings and "SDK version … 0.200.0" while the active SDK is 0.24.12112 | Low | Ignored | Hide these behind `--verbose` and report the active SDK version |
