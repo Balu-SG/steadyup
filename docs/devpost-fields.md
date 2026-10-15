@@ -39,8 +39,8 @@
   SteadyUp uses Amazon Bedrock (Converse API) with Amazon Nova Lite (us.amazon.nova-lite-v1:0) as an AI coach. When a session ends, the TV app posts the results (sit-to-stand reps, steadiness score per balance hold, trend compared with earlier sessions) to our Node.js server at POST /api/coach. The server cleans the input, turns it into plain lines, and calls Bedrock with a system prompt that asks for two encouraging sentences: one specific win and one practical tip, with no medical advice. The TV shows the reply in a "Your coach" card and the phone reads it aloud with the Web Speech API. To keep it reliable and cheap, the call is capped at 8 seconds with an abort signal, falls back to a rule-based message if Bedrock is slow or unavailable, and is rate-limited to 20 requests per client per 10 minutes. The model ID is set by BEDROCK_MODEL_ID, so another Bedrock model can be swapped in without code changes. Code: server/src/coach.js; documented in the README under "AI coach (Amazon Bedrock)".
 
 ### Open Source Mini Challenge
-- **Submitting?:** Yes (only after the pull request is open; otherwise No)
-- **Contribution URL:** TODO: pull request URL
+- **Submitting?:** Yes
+- **Contribution URL:** https://github.com/AmazonAppDev/react-native-multi-tv-app-sample/pull/137
 - **Project Repository URL:** https://github.com/AmazonAppDev/react-native-multi-tv-app-sample
 - **GitHub Username:** Balu-SG
 - **What, how, why:**

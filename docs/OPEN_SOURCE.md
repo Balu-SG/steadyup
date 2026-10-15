@@ -68,7 +68,7 @@ after: everything fits).
 
 ## Devpost fields for the Open Source mini challenge
 
-- **Contribution URL:** [YOU: the pull request URL once it's open]
+- **Contribution URL:** https://github.com/AmazonAppDev/react-native-multi-tv-app-sample/pull/137
 - **Repo URL:** https://github.com/AmazonAppDev/react-native-multi-tv-app-sample
 - **GitHub username:** Balu-SG
 - **What we did, how it works, why it matters:** Fixed the template's screen
