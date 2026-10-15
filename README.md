@@ -193,3 +193,7 @@ SteadyUp is not a medical device. It encourages exercise and gives feedback; it
 doesn't diagnose anything, and its fall prompt doesn't replace an emergency
 alarm. The exercises are based on the moves in the CDC's STEADI tests, but
 SteadyUp is not a clinical assessment.
+
+## License
+
+MIT. See [LICENSE](LICENSE). The TV app template it is built on is MIT-0.
