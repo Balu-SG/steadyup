@@ -32,7 +32,7 @@ phone's browser.
 and Enter act as the TV remote; scan the QR code with your phone to pair. The
 server is on a free plan, so the first visit can take about a minute to wake it.
 
-**Demo video (1:45):** [docs/steadyup-demo.mp4](docs/steadyup-demo.mp4)
+**Demo video (on Fire TV, Vega OS virtual device):** https://youtu.be/3rN6LLTX-Eo
 
 ![Home screen](docs/images/home.png)
 

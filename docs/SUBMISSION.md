@@ -8,7 +8,7 @@ the phone in your pocket counting reps and scoring balance.
 ## Links
 
 - **Try it in your browser:** https://steadyup.onrender.com/play (arrow keys + Enter = TV remote; scan the QR code with a phone). The first visit can take about a minute while the free server wakes up.
-- **Demo video:** [YOU: public YouTube link to the video recorded on the Fire TV or Vega simulator; the rules require the device, so don't use the browser recording]
+- **Demo video:** https://youtu.be/3rN6LLTX-Eo
 - **Code:** https://github.com/Balu-SG/steadyup (private: ask us for access)
 
 ## Short description (≈50 words)

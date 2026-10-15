@@ -18,7 +18,7 @@
   4. sit-to-stand.png: Sit-to-stand reps counted automatically from the phone in your pocket
   5. balance-hold.png: Balance holds get a live 0–100 steadiness score
   6. summary.png: Session summary with a personal message from the AI coach on Amazon Bedrock
-- **Video demo link:** TODO: YouTube link to a recording on Fire TV or the Vega simulator
+- **Video demo link:** https://youtu.be/3rN6LLTX-Eo
 
 ## Step 4: Additional info
 
