@@ -52,7 +52,7 @@
   2. Add a line of instructions on the Developer options screen, which today shows only a QR code, plus the device's connection status. Priority: Important.
   3. Publish a React Native version and API compatibility table for Vega (RN 0.72) versus Fire OS / Expo (RN 0.81), for teams that share UI code. Priority: Nice-to-have.
   4. A documented way to move D-pad focus programmatically in react-tv-space-navigation after screen content changes. Priority: Nice-to-have.
-- **Friction Log:** link to a public copy of docs/PRODUCT_FEEDBACK.md (for example https://github.com/Balu-SG/steadyup/blob/main/docs/PRODUCT_FEEDBACK.md once the repo is public). Fill in the [YOU: …] parts first. A friction log is worth up to a 10% bonus.
+- **Friction Log:** https://github.com/Balu-SG/steadyup/blob/main/docs/PRODUCT_FEEDBACK.md
 - **Project Testing Link:** https://steadyup.onrender.com/play
 
 ### Feedback questions
@@ -66,10 +66,10 @@ Vega CLI: one command built signed packages for every architecture in a couple o
 Vega CLI: old "Kepler" names are mixed with "Vega" (build-kepler, build/private/kepler/...), and the build output path contains a literal "undefined" folder. It wasn't clear whether to sideload the debug or release build. Device setup: About shows "OS 2.0" rather than "Vega OS", Developer options shows only a QR code with no explanation, and after registering, vda connect was refused and vega device list showed no devices. Template: Vega uses RN 0.72 and Expo uses RN 0.81, so shared code has to avoid newer APIs (I avoided SVG, gradients and transformOrigin). Scaling by the screen diagonal makes layouts overflow on non-16:9 windows (I fixed this in my open source contribution). There are many peer-dependency warnings on install, and manifest warnings on build.
 
 **Q4. How was your onboarding experience?**
-Writing the app was quick thanks to the template: the shared UI was running in a browser on day one. The slowest part of the whole project was getting the Fire TV Stick ready to accept my build: working out that it ran Vega OS rather than Fire OS, understanding the QR-only developer mode screen, and getting a connection to the device. Clearer on-device text and a "first install on Vega OS" checklist would cut this from hours to minutes.
+Writing the app was quick thanks to the template: the shared UI was running in a browser on day one. The slowest part of the whole project was getting the Fire TV Stick ready to accept my build: working out that it ran Vega OS rather than Fire OS, understanding the QR-only developer mode screen, and trying to connect to it. I never got a connection, so I switched to the Vega Virtual Device, which also needed a manual fix: the installer had downloaded the simulator image but never unpacked it. Once that was done, the simulator worked well. Clearer on-device text, a "first install on Vega OS" checklist and an installer that checks its own work would cut this from hours to minutes.
 
 **Q5. Would you build with these devices and services again?**
-Yes. Once installed, the app ran smoothly on the Fire TV, and one React Native codebase covering Vega OS, Fire OS and the web is a strong reason to build for Fire TV. Bedrock made adding an AI coach a small, safe change. I'd build again, especially if device setup for Vega OS gets simpler.
+Yes. Once installed, the app ran smoothly on the Vega Virtual Device, and one React Native codebase covering Vega OS, Fire OS and the web is a strong reason to build for Fire TV. Bedrock made adding an AI coach a small, safe change. I'd build again, especially if device setup for Vega OS gets simpler.
 
 ### Declarations (tick all three)
 - Age of majority: tick
