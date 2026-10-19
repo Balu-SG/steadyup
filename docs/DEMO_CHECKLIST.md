@@ -10,7 +10,7 @@ go on (step 2 below).
 ## The night before
 
 - [ ] Charge the phone and the laptop. Bring the laptop charger.
-- [ ] Download the backup video `out/steadyup-demo.mp4` to the laptop **and**
+- [ ] Download the backup video (https://youtu.be/3rN6LLTX-Eo, or `out/steadyup-demo.mp4` if you recorded one) to the laptop **and**
       the phone, in case Wi-Fi or the server fails.
 - [ ] Bring a **sturdy chair without wheels** for the sit-to-stand and balance demo.
 - [ ] Wear trousers with a **front pocket** that holds the phone snugly.

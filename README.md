@@ -113,7 +113,7 @@ Amazon Nova Lite is available to the account in `ap-southeast-2` (Sydney), and s
 |---|---|
 | `server/` | Node.js pairing and relay server (HTTP and WebSocket), the phone page, and motion processing with unit tests |
 | `tv/packages/shared-ui/src/steadyup/` | The SteadyUp TV screens, shared by every TV app |
-| `tv/apps/expo-multi-tv/` | Android TV and Fire TV (Fire OS) app, plus the web build used for testing |
+| `tv/apps/expo-multi-tv/` | Android TV / Fire OS app from the template (not yet tested on a device), plus the web build used for testing and `/play` |
 | `tv/apps/vega/` | Fire TV app for Vega OS |
 | `scripts/dev-tunnel.sh` | Starts the server behind a public HTTPS tunnel and points the TV app at it |
 | `scripts/e2e-tv.mjs` | End-to-end test: drives the TV app in headless Chrome with a simulated phone |

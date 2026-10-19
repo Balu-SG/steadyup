@@ -9,7 +9,7 @@ the phone in your pocket counting reps and scoring balance.
 
 - **Try it in your browser:** https://steadyup.onrender.com/play (arrow keys + Enter = TV remote; scan the QR code with a phone). The first visit can take about a minute while the free server wakes up.
 - **Demo video:** https://youtu.be/3rN6LLTX-Eo
-- **Code:** https://github.com/Balu-SG/steadyup (private: ask us for access)
+- **Code:** https://github.com/Balu-SG/steadyup
 
 ## Short description (≈50 words)
 
@@ -67,8 +67,9 @@ clinic check into a daily home habit.
 
 ## How we built it
 
-- **TV app:** React Native, from one shared codebase for Fire TV (Vega OS and
-  Fire OS), Android TV and the web, with remote-control focus navigation. The
+- **TV app:** React Native, from one shared codebase that runs on Fire TV (Vega
+  OS) and in the browser, with a Fire OS / Android TV app in the same codebase,
+  and remote-control focus navigation. The
   exercise demos are animated with plain views (no video files), so they run
   offline on every platform.
 - **Phone:** a plain web page using the browser's `devicemotion` sensors. Motion

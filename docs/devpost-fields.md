@@ -10,7 +10,7 @@
 - **Built with:** react-native, typescript, javascript, node.js, websockets, amazon-bedrock, amazon-nova, amazon-web-services, vega-os, fire-os, fire-tv, web-speech-api, devicemotion, render
 - **Try it out links:**
   - https://steadyup.onrender.com/play
-  - https://github.com/Balu-SG/steadyup (make the repo public first)
+  - https://github.com/Balu-SG/steadyup
 - **Image gallery (in this order, with captions):**
   1. thumbnail.png: SteadyUp: strength and balance on Fire TV, with the phone in your pocket as the sensor
   2. home.png: Home screen: today's 5-minute session, streak and steadiness trend
@@ -29,7 +29,6 @@
 - **Canada province:** N/A
 - **Primary Track(s):** Fire TV (only pick the track that SteadyUp actually fits)
 - **Code repository URL:** https://github.com/Balu-SG/steadyup
-  - Before you submit: make the repo public, add a LICENSE file (MIT), and set the About description. The repo has no LICENSE yet.
 - **Is your project new or existing prior to August 31, 2026?:** New
 - **If existing, what you updated:** leave empty
 
