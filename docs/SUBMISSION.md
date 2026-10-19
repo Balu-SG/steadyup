@@ -86,7 +86,7 @@ clinic check into a daily home habit.
 - **Progress:** the phone keeps session history in local storage and sends the
   TV a streak, sessions this week and steadiness trend when it connects; the
   share button uses the Web Share API.
-- **Testing:** 29 unit tests for pairing and the motion algorithms, plus an
+- **Testing:** 30 unit tests for pairing and the motion algorithms, plus an
   end-to-end test that drives the TV app with a simulated phone, screenshots
   every screen, and checks that nothing overlaps or runs off a 1080p TV.
 

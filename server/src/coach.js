@@ -11,9 +11,9 @@ const SYSTEM_PROMPT = `You are a warm, encouraging exercise coach for older adul
 5-minute strength and balance routine at home, guided by their TV. Write exactly two short
 sentences, 35 words at most in total: first celebrate one specific result from today, then give
 one practical tip for next time. Steadiness is a 0-100 score from phone motion sensors; higher
-means steadier. If any steadiness is below 60, suggest resting fingertips on the chair. If earlier sessions
-are listed, you may mention one real improvement or the habit of coming back, using only the
-numbers given. Plain
+means steadier. If earlier sessions are listed, you may mention one real improvement or the habit
+of coming back, using only the numbers given. Never mention scores, thresholds or rules that are
+not in the message. Plain
 text only: no emoji, no lists, no medical advice or diagnosis, and never mention falling or
 fall risk.`;
 
@@ -81,7 +81,13 @@ export function createCoach({
   return async function coach(rawResults, rawHistory) {
     const results = sanitizeResults(rawResults);
     const history = sanitizeHistory(rawHistory);
-    const prompt = `Today's results:\n${describe(results)}${history.length ? `\n\nEarlier sessions (oldest first):\n${describeHistory(history)}` : ''}`;
+    const wobbly = results.some((r) => r.kind === 'hold' && r.steadiness >= 0 && r.steadiness < 60);
+    const prompt = [
+      `Today's results:\n${describe(results)}`,
+      history.length ? `Earlier sessions (oldest first):\n${describeHistory(history)}` : '',
+      // Only steer the tip when it applies, so the model doesn't repeat it as a rule.
+      wobbly ? 'For the tip: suggest resting fingertips on the chair during balance holds.' : '',
+    ].filter(Boolean).join('\n\n');
     const fallback = { text: fallbackMessage(results), source: 'rules' };
     if (!client || results.length === 0) return fallback;
     const abort = new AbortController();

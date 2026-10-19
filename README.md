@@ -171,7 +171,7 @@ trouser pocket, screen facing your leg.
 ## Tests
 
 ```bash
-cd server && npm test              # 29 tests: pairing, relay, rep counting, steadiness, fall detection, AI coach, history
+cd server && npm test              # 30 tests: pairing, relay, rep counting, steadiness, fall detection, AI coach, history
 ```
 
 End-to-end, with the TV web build served on port 8090, against the live server:

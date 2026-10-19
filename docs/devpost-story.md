@@ -27,7 +27,7 @@ SteadyUp is a guided 5-minute strength and balance routine on Fire TV, built on 
 - **Server:** a small Node.js service that pairs the TV and phone with a 4-digit code and QR code, then relays messages over WebSockets.
 - **AI coach:** the server calls the Amazon Bedrock Converse API with a cleaned summary of the session. It caps the wait at 8 seconds, falls back to a rule-based message so the coach always answers, and rate-limits requests to control cost.
 - **Voice:** the TV sends coaching lines to the phone, which speaks them with the Web Speech API.
-- **Testing:** 29 unit tests for pairing, rep counting, steadiness, fall detection and the AI coach, plus an end-to-end test that drives the TV app in headless Chrome with a simulated phone, screenshots every screen, and fails if anything overlaps or runs off a 1080p TV.
+- **Testing:** 30 unit tests for pairing, rep counting, steadiness, fall detection and the AI coach, plus an end-to-end test that drives the TV app in headless Chrome with a simulated phone, screenshots every screen, and fails if anything overlaps or runs off a 1080p TV.
 
 ## Challenges I ran into
 

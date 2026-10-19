@@ -77,3 +77,13 @@ test('earlier sessions are cleaned and passed to the model', async () => {
   await createCoach({ client })(RESULTS, history);
   assert.match(sent.messages[0].content[0].text, /Earlier sessions \(oldest first\):\n- 2026-10-12: 4 sit-to-stands/);
 });
+
+test('the chair tip is only requested when a hold was wobbly', async () => {
+  const sent = [];
+  const client = { send: async (cmd) => (sent.push(cmd.input.messages[0].content[0].text), { output: { message: { content: [{ text: 'ok' }] } } }) };
+  const coach = createCoach({ client });
+  await coach(RESULTS); // includes a hold at 55
+  await coach([{ title: 'Feet together', kind: 'hold', steadiness: 82, seconds: 10 }]);
+  assert.match(sent[0], /fingertips on the chair/);
+  assert.doesNotMatch(sent[1], /fingertips/);
+});
