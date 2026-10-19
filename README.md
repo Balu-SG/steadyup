@@ -93,7 +93,7 @@ and runs in the phone's browser:
 When a session ends, the TV posts the results to `POST /api/coach`. The server
 ([`server/src/coach.js`](server/src/coach.js)) cleans the input, describes the
 results in plain lines, and calls the **Amazon Bedrock Converse API** with
-**Amazon Nova Lite** (`us.amazon.nova-lite-v1:0`, set by `BEDROCK_MODEL_ID`).
+**Amazon Nova Lite** (`amazon.nova-lite-v1:0` in `ap-southeast-2`, set by `BEDROCK_MODEL_ID` and `AWS_REGION`).
 The system prompt asks for two encouraging sentences: one specific win and one
 practical tip, with no medical advice. The TV shows the reply in a "Your coach"
 card and the phone reads it aloud.
@@ -103,7 +103,7 @@ seconds, or fails, the server returns a rule-based message instead. Requests are
 limited to 20 per client per 10 minutes.
 
 To enable it, give an IAM user `bedrock:InvokeModel` permission, make sure
-Amazon Nova Lite is available to the account in `us-east-1`, and set
+Amazon Nova Lite is available to the account in `ap-southeast-2` (Sydney), and set
 `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` on the Render service (see
 [`render.yaml`](render.yaml)).
 

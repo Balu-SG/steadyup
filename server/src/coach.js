@@ -3,7 +3,7 @@
 // fails, a rule-based message is used instead, so the TV always has something to show.
 import { BedrockRuntimeClient, ConverseCommand } from '@aws-sdk/client-bedrock-runtime';
 
-export const DEFAULT_MODEL_ID = 'us.amazon.nova-lite-v1:0';
+export const DEFAULT_MODEL_ID = 'amazon.nova-lite-v1:0';
 const TIMEOUT_MS = 8000;
 const MAX_RESULTS = 12;
 
@@ -74,7 +74,7 @@ export function fallbackMessage(results) {
 }
 
 export function createCoach({
-  client = process.env.AWS_ACCESS_KEY_ID ? new BedrockRuntimeClient({ region: process.env.AWS_REGION ?? 'us-east-1' }) : null,
+  client = process.env.AWS_ACCESS_KEY_ID ? new BedrockRuntimeClient({ region: process.env.AWS_REGION ?? 'ap-southeast-2' }) : null,
   modelId = process.env.BEDROCK_MODEL_ID ?? DEFAULT_MODEL_ID,
   timeoutMs = TIMEOUT_MS,
 } = {}) {

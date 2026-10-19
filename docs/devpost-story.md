@@ -44,7 +44,7 @@ SteadyUp is a guided 5-minute strength and balance routine on Fire TV, built on 
 
 ## What I learned
 
-- How much signal a phone's accelerometer gives from a pocket, and how simple filters beat complex models for this
+- How much signal a phone's accelerometer gives from a pocket, and how simple filters were enough for this
 - Designing for a 10-foot screen and a remote: large type, few choices per screen, everything reachable with arrows and OK
 - Building for Vega OS alongside Fire OS from one React Native codebase
 
