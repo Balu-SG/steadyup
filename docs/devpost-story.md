@@ -19,7 +19,7 @@ SteadyUp is a guided 5-minute strength and balance routine on Fire TV, built on 
 
 ## How I built it
 
-- **TV app:** React Native, from one shared codebase for Fire TV (Vega OS and Fire OS), Android TV and the web, based on Amazon's `react-native-multi-tv-app-sample` template for remote-control focus handling. The exercise demos are animated with plain views (no video files), so they work offline and look the same on every platform.
+- **TV app:** React Native, from one shared codebase that runs on Fire TV (Vega OS) and in the browser, with a Fire OS / Android TV app in the same codebase, based on Amazon's `react-native-multi-tv-app-sample` template for remote-control focus handling. The exercise demos are animated with plain views (no video files), so they work offline and look the same on every platform.
 - **Phone:** a plain web page using the browser's `devicemotion` sensors. All motion processing runs on the phone:
   - a low-pass filter estimates gravity, and the angle against a "seated" reference tells sitting from standing, with hysteresis (stand above 60°, seated below 30°) and a minimum rep time
   - steadiness is the RMS spread of acceleration over the hold, mapped to 0–100
@@ -39,7 +39,7 @@ SteadyUp is a guided 5-minute strength and balance routine on Fire TV, built on 
 ## Accomplishments that I'm proud of
 
 - Rep counting and balance scoring from a phone in a pocket, with no app install and no wearable
-- One codebase running on Vega OS, Fire OS and in the browser
+- One codebase running on Vega OS and in the browser
 - An AI coach that never breaks the session, even when the network or Bedrock is slow
 
 ## What I learned
